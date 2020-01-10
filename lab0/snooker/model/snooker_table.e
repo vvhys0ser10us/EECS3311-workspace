@@ -5,11 +5,11 @@ note
 		terminates if a ball is moved to a pocket.
 	]"
 	author: "JSO"
-class 
+class
 	SNOOKER_TABLE
 inherit
 	CONSTANTS
-create 
+create
 	make
 feature {NONE} -- Initialization
 
@@ -17,6 +17,11 @@ feature {NONE} -- Initialization
 			-- Initialization for Current.
 		require
 				a_blue /~ a_red
+		do
+			blue := a_blue
+			red := a_red
+			pocket := create{BALL_POINT}.make(width,length)
+		end
 feature -- queries
 	blue: BALL_POINT
 
@@ -26,10 +31,12 @@ feature -- queries
 
 	terminated: BOOLEAN
 			-- game terminates when either ball is in pocket
+		do
+			Result := (blue ~ pocket or red ~ pocket)
 		ensure
 				Result = (blue ~ pocket or red ~ pocket)
 		end
-	
+
 feature -- commands
 
 	impulse_blue (delta: TUPLE2)
@@ -37,8 +44,12 @@ feature -- commands
 		require
 			delta_safe: blue.safe (blue.x + delta.x, blue.y + delta.y)
 			status: not terminated
-			not_red: red /~ {BALL_POINT}.t2ball 
-				(create {TUPLE2}.make_from_tuple 
+			not_red: red /~ {BALL_POINT}.t2ball
+				(create {TUPLE2}.make_from_tuple
+					([blue.x + delta.x, blue.y + delta.y]))
+		do
+			blue := {BALL_POINT}.t2ball
+				(create {TUPLE2}.make_from_tuple
 					([blue.x + delta.x, blue.y + delta.y]))
 		ensure
 			new_blue_x: blue.x ~ old blue.x + delta.x
@@ -51,15 +62,19 @@ feature -- commands
 		require
 			delta_safe: red.safe (red.x + delta.x, red.y + delta.y)
 			status: not terminated
-			not_red: red /~ {BALL_POINT}.t2ball 
-				(create {TUPLE2}.make_from_tuple 
+			not_red: red /~ {BALL_POINT}.t2ball
+				(create {TUPLE2}.make_from_tuple
+					([red.x + delta.x, red.y + delta.y]))
+		do
+			red := {BALL_POINT}.t2ball
+				(create {TUPLE2}.make_from_tuple
 					([red.x + delta.x, red.y + delta.y]))
 		ensure
 			new_red_x: red.x ~ old red.x + delta.x
 			new_red_y: red.y ~ old red.y + delta.y
 			unchanged: blue ~ old blue
 		end
-	
+
 feature --  multi move blue ball
 	maximum: detachable TUPLE2
 
@@ -88,8 +103,8 @@ feature --  multi move blue ball
 				l_delta := a [i]
 				if safe (l_delta) then
 					impulse_blue (l_delta)
-					if attached maximum as l_max 
-						and then l_max < l_delta 
+					if attached maximum as l_max
+						and then l_max < l_delta
 					then
 						maximum := l_delta
 					end
@@ -115,7 +130,7 @@ feature --  multi move blue ball
 					      max >= delta
 					    end)
 		end
-	
+
 feature {NONE} -- implementation
 
 	safe (delta: TUPLE2): BOOLEAN
@@ -124,17 +139,16 @@ feature {NONE} -- implementation
 			new_blue: like blue
 		do
 			create new_blue.make (blue.x + delta.x, blue.y + delta.y)
-			Result := blue.safe (blue.x + delta.x, blue.y + delta.y) 
+			Result := blue.safe (blue.x + delta.x, blue.y + delta.y)
 				and new_blue /~ red and not terminated
 		end
-	
+
 invariant
-no_crash: 
+no_crash:
 	red /~ blue
-top_right_terminating_pocket: 
+top_right_terminating_pocket:
 	pocket ~ {BALL_POINT}.t2ball (create {TUPLE2}.make_from_tuple ([Width, Length]))
 
 	not calculated = (maximum = Void)
 
 end -- class SNOOKER_TABLE
-			

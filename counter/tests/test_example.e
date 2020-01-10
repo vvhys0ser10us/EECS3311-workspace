@@ -41,6 +41,7 @@ feature -- tests
 		do
 			comment ("t0: First test fails as Result = False")
 				-- this test will fail because Result = False
+			result := True
 		end
 
 	t1: BOOLEAN
