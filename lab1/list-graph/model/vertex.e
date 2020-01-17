@@ -78,11 +78,23 @@ feature -- derived queries
 	outgoing_sorted: ARRAY[EDGE[G]]
 			-- Return outgoing edges as a sorted array
 			-- (based on destination vertices of edges).
+		local
+			i:INTEGER
+
 		do
 
 			-- Todo: complete implementation
+			from
+				i := 1
+			until
+				i >= outgoing.count 
+			loop
+				outgoing_sorted.force (outgoing.at (i), i)
+				i := i + 1
+			end
+			Result := outgoing_sorted
 
-			create Result.make_empty -- this line is for compilation purposes
+
 		ensure
 			-- ∀ i ∈ 1 .. (Result.count - 1) : Result[i].destination ≤ Result[i + 1].destination
 			sorted:
@@ -96,6 +108,7 @@ feature -- derived queries
 		do
 
 			-- Todo: complete implementation
+			Result := outgoing.count
 
 		ensure
 			outgoing_edge_count:
@@ -107,6 +120,7 @@ feature -- derived queries
 		do
 
 			-- Todo: complete implementation
+			Result := incoming.count
 
 		ensure
 			incoming_edge_count:
@@ -118,6 +132,7 @@ feature -- derived queries
 		do
 
 			-- Todo: complete implementation
+			Result := incoming_edge_count + outgoing_edge_count
 
 		ensure
 			correct_count:
@@ -130,6 +145,7 @@ feature -- derived queries
 		do
 
 			-- Todo: complete implementation
+			Result := outgoing.has (a_edge)
 
 		ensure
 			Result = outgoing.has (a_edge)
@@ -140,6 +156,7 @@ feature -- derived queries
 		do
 
 			-- Todo: complete implementation
+			Result := incoming.has (a_edge)
 
 		ensure
 			Result = incoming.has (a_edge)
@@ -154,13 +171,20 @@ feature -- commands
 		do
 
 			-- Todo: complete implementation
-
+			if (a_edge.source ~ Current) and (a_edge.destination /~ Current) then outgoing.force (a_edge)
+			elseif(a_edge.source /~ Current and a_edge.destination ~ Current) then incoming.force (a_edge)
+			else
+			outgoing.force (a_edge)
+			incoming.force (a_edge)
+			end
 		ensure
 			a_edge.destination ~ Current implies incoming.count = old incoming.count + 1
 			a_edge.source ~ Current implies outgoing.count = old outgoing.count + 1
 			a_edge.destination ~ Current implies incoming.has (a_edge)
 			a_edge.source ~ Current implies outgoing.has (a_edge)
 			-- incomplete, to add!
+			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(incoming.count = old incoming.count + 1 and outgoing.count = old outgoing.count + 1)
+			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(incoming.has (a_edge) and outgoing.has (a_edge))
 		end
 
 	remove_edge(a_edge: EDGE[G])
@@ -169,9 +193,21 @@ feature -- commands
 		do
 
 			-- Todo: complete implementation
+			if a_edge.source ~ Current and a_edge.destination /~ Current then outgoing.prune_all (a_edge)
+			elseif a_edge.source /~ Current and a_edge.destination ~ Current  then incoming.prune_all (a_edge)
+			else
+			outgoing.prune_all (a_edge)
+			incoming.prune_all (a_edge)
+			end
 
 		ensure
 			-- To do.
+			a_edge.destination ~ Current implies incoming.count = old incoming.count - 1
+			a_edge.source ~ Current implies outgoing.count = old outgoing.count - 1
+			a_edge.destination ~ Current implies not incoming.has (a_edge)
+			a_edge.source ~ Current implies not outgoing.has (a_edge)
+			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(incoming.count = old incoming.count - 1 and outgoing.count = old outgoing.count - 1)
+			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(not incoming.has (a_edge) and not outgoing.has (a_edge))
 		end
 
 feature -- out

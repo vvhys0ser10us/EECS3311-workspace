@@ -44,7 +44,7 @@ feature {NONE}  -- creation
 feature -- basic queries
 
 	source: VERTEX [G]
-		-- soure of edge
+		-- source of edge
 
 	destination: VERTEX [G]
 		-- destination of edge
