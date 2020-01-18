@@ -19,7 +19,7 @@ feature {NONE} -- Initialization
 		do
 			add_test (create {STUDENT_TEST}.make)
 			add_test (create {TEST_VERTEX_INSTRUCTOR}.make)
---			add_test (create {TEST_LIST_GRAPH_INSTRUCTOR}.make)
+			add_test (create {TEST_LIST_GRAPH_INSTRUCTOR}.make)
 				-- Uncomment once you pass all tests in TEST_VERTEX_INSTRUCTOR.
 			show_browser
 			run_espec

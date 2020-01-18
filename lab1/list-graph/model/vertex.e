@@ -80,20 +80,26 @@ feature -- derived queries
 			-- (based on destination vertices of edges).
 		local
 			i:INTEGER
+			l_comparator: EDGE_COMPARATOR [G]
+			l_sorter: DS_ARRAY_QUICK_SORTER[EDGE[G]]
+			l_array:ARRAY[EDGE[G]]
 
 		do
 
 			-- Todo: complete implementation
+			Create l_array.make_empty
 			from
 				i := 1
 			until
-				i >= outgoing.count 
+				i > outgoing.count
 			loop
-				outgoing_sorted.force (outgoing.at (i), i)
+				l_array.force(outgoing[i], i)
 				i := i + 1
 			end
-			Result := outgoing_sorted
-
+			create l_comparator
+			create l_sorter.make (l_comparator)
+			l_sorter.sort(l_array)
+			Result := l_array
 
 		ensure
 			-- ∀ i ∈ 1 .. (Result.count - 1) : Result[i].destination ≤ Result[i + 1].destination

@@ -15,7 +15,7 @@ feature
 	attached_less_than (u,v: EDGE[G]): BOOLEAN
 			-- Is `u' considered less than `v'?
 		do
-		result:= u.destination < v.destination
+		Result:= u.destination < v.destination
 
 		end
 
