@@ -195,8 +195,29 @@ feature -- Advanced Queries
 			cl_existing_source: has_vertex (src)
 		local
 			-- Include declarations for local variables used here
+			r_array:ARRAY [VERTEX [G]]
+			queue: QUEUE [VERTEX[G]]
+			front: VERTEX[G]
 		do
 			create Result.make_empty -- Included for compilation
+			from
+				r_array := <<src>>
+				queue := <<src>>
+			until
+				queue.is_empty
+			loop
+				front := queue.first
+				queue.dequeue
+				across front.outgoing_sorted  is x
+				loop
+					if not r_array.has (x.destination) then
+						r_array.force (x.destination, r_array.count + 1)
+						queue.enqueue (x.destination)
+					end
+
+				end
+			end
+			Result := r_array
 
 				-- To Do.
 
@@ -213,10 +234,16 @@ feature -- commands
 		do
 
 				-- To Do.
+				vertices.force (a_vertex)
 
 		ensure
-			cl_add_vertex_membership: False -- To Do.
-			cl_add_vertex_others_unchanged: False -- To Do.
+			cl_add_vertex_membership:has_vertex(a_vertex)  -- To Do.
+			cl_add_vertex_others_unchanged:
+			across vertices as v
+			all
+				has_vertex(v.item)
+			end
+			  -- To Do.
 			cl_add_vertex_count: vertex_count = old vertex_count + 1
 		end
 
@@ -232,10 +259,20 @@ feature -- commands
 		do
 
 				-- To Do.
+			src :=a_edge.source
+			dst :=a_edge.destination
+			create new_edge.make_from_tuple (src,dst)
 
+			src.outgoing.force (new_edge)
+			dst.incoming.force (new_edge)
+			
 		ensure
-			cl_add_edge_membership: False -- To Do.
-			cl_add_edge_others_unchanged: False -- To Do.
+			cl_add_edge_membership:has_edge(a_edge)  -- To Do.
+			cl_add_edge_others_unchanged:
+			across edges as e
+			all
+				has_edge(e.item)
+			end  -- To Do.
 			cl_add_edge_count: edge_count = old edge_count + 1
 		end
 
@@ -250,6 +287,10 @@ feature -- commands
 		do
 
 				-- To Do.
+				src := a_edge.source
+				dst := a_edge.destination
+				src.outgoing.prune_all (a_edge)
+				dst.incoming.prune_all (a_edge)
 
 		ensure
 			cl_remove_edge_count: edge_count = old edge_count - 1
@@ -263,9 +304,34 @@ feature -- commands
 		local
 			l_edge: EDGE [G]
 			v: VERTEX [G]
+			i:INTEGER
 		do
 
 				-- To Do.
+				from
+					i := 1
+				until
+					i > a_vertex.incoming_edge_count
+				loop
+					v := a_vertex.incoming[i].source
+					create l_edge.make_from_tuple (v, a_vertex)
+					v.outgoing.prune_all (l_edge)
+					i := i +1
+				end
+
+
+				from
+					i := 1
+				until
+					i > a_vertex.outgoing_edge_count
+				loop
+					 v := a_vertex.outgoing[i].destination
+					create l_edge.make_from_tuple (a_vertex, v)
+					v.incoming.prune_all (l_edge)
+					i := i +1
+				end
+				 create v.make (a_vertex.item)
+				vertices.prune_all (v)
 
 		ensure
 			cl_remove_vertex_count: vertex_count = old vertex_count - 1
@@ -336,12 +402,27 @@ invariant
 	vertex_count = vertices.count
 	vertices.lower = 1
 	unique_vertices: across 1 |..| vertex_count as i all across 1 |..| vertex_count as j all i.item /= j.item implies vertices [i.item] /~ vertices [j.item] end end
-	consistency_incoming_outgoing: across vertices is l_vertex all across l_vertex.outgoing is l_edge all l_edge.destination.has_incoming_edge (l_edge) end and across l_vertex.incoming is l_edge all l_edge.source.has_outgoing_edge (l_edge) end end
+	consistency_incoming_outgoing:
+	across vertices is l_vertex
+	all
+		across l_vertex.outgoing is l_edge
+		all
+		l_edge.destination.has_incoming_edge (l_edge)
+		end
+	and
+		across l_vertex.incoming is l_edge
+		all l_edge.source.has_outgoing_edge (l_edge)
+		end
+	end
 	consistency_incoming_outgoing2:
 			-- ∀e ∈ edges:
 			--	   ∧ e ∈ e.source.outgoing
 			--	   ∧ e ∈ e.destination.incoming
-		across edges as l_edge all l_edge.item.source.has_outgoing_edge (l_edge.item) and l_edge.item.destination.has_incoming_edge (l_edge.item) end
+		across edges as l_edge
+		all l_edge.item.source.has_outgoing_edge (l_edge.item)
+		and
+			l_edge.item.destination.has_incoming_edge (l_edge.item)
+		end
 	count_property_symmetry_1: -- (Σv ∈ vertices : v.outgoing_edge_count + v.incoming_edge_count) = 2 * edge_count
 		vertices_edge_count = 2 * edge_count
 	count_property_symmetry_2: -- (Σv ∈ vertices : v.outgoing_edge_count) = (Σv ∈ vertices : v.incoming_edge_count)

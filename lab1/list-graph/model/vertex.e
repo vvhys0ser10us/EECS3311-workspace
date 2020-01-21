@@ -177,8 +177,14 @@ feature -- commands
 		do
 
 			-- Todo: complete implementation
-			if (a_edge.source ~ Current) and (a_edge.destination /~ Current) then outgoing.force (a_edge)
-			elseif(a_edge.source /~ Current and a_edge.destination ~ Current) then incoming.force (a_edge)
+			if (a_edge.source ~ Current) and (a_edge.destination /~ Current)
+			then
+				outgoing.force (a_edge)
+										--a_edge.destination.incoming.force (a_edge)
+			elseif(a_edge.source /~ Current and a_edge.destination ~ Current)
+			then
+				incoming.force (a_edge)
+										--a_edge.source.outgoing.force (a_edge)
 			else
 			outgoing.force (a_edge)
 			incoming.force (a_edge)
@@ -189,8 +195,11 @@ feature -- commands
 			a_edge.destination ~ Current implies incoming.has (a_edge)
 			a_edge.source ~ Current implies outgoing.has (a_edge)
 			-- incomplete, to add!
-			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(incoming.count = old incoming.count + 1 and outgoing.count = old outgoing.count + 1)
-			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(incoming.has (a_edge) and outgoing.has (a_edge))
+	--		across 1  |..| (outgoing.count - 1) is i
+	--		all
+	--			outgoing[i] ~ old outgoing[i]
+	--		end
+
 		end
 
 	remove_edge(a_edge: EDGE[G])
@@ -199,8 +208,14 @@ feature -- commands
 		do
 
 			-- Todo: complete implementation
-			if a_edge.source ~ Current and a_edge.destination /~ Current then outgoing.prune_all (a_edge)
-			elseif a_edge.source /~ Current and a_edge.destination ~ Current  then incoming.prune_all (a_edge)
+			if a_edge.source ~ Current and a_edge.destination /~ Current
+			then
+				outgoing.prune_all (a_edge)
+				a_edge.destination.incoming.prune_all (a_edge)
+			elseif a_edge.source /~ Current and a_edge.destination ~ Current
+			then
+				incoming.prune_all (a_edge)
+				a_edge.source.outgoing.prune_all (a_edge)
 			else
 			outgoing.prune_all (a_edge)
 			incoming.prune_all (a_edge)
@@ -212,8 +227,7 @@ feature -- commands
 			a_edge.source ~ Current implies outgoing.count = old outgoing.count - 1
 			a_edge.destination ~ Current implies not incoming.has (a_edge)
 			a_edge.source ~ Current implies not outgoing.has (a_edge)
-			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(incoming.count = old incoming.count - 1 and outgoing.count = old outgoing.count - 1)
-			(a_edge.source ~ Current and a_edge.destination ~ Current) implies(not incoming.has (a_edge) and not outgoing.has (a_edge))
+
 		end
 
 feature -- out
