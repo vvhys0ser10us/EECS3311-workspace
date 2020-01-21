@@ -259,13 +259,30 @@ feature -- commands
 		do
 
 				-- To Do.
-			src :=a_edge.source
-			dst :=a_edge.destination
-			create new_edge.make_from_tuple (src,dst)
+			src := a_edge.source
+			dst := a_edge.destination
+			across
+			1 |..| vertices.count	 is i
+			loop
+				if(vertices[i].is_equal (a_edge.source))
+				then
+					src := vertices[i]
+				end
+			end
 
+			across
+			1 |..| vertices.count	 is i
+			loop
+				if(vertices[i].is_equal (a_edge.destination))
+				then
+					dst := vertices[i]
+				end
+			end
+
+			create new_edge.make (src, dst)
 			src.outgoing.force (new_edge)
 			dst.incoming.force (new_edge)
-			
+
 		ensure
 			cl_add_edge_membership:has_edge(a_edge)  -- To Do.
 			cl_add_edge_others_unchanged:
@@ -303,35 +320,46 @@ feature -- commands
 			cl_existing_vertex: has_vertex (a_vertex)
 		local
 			l_edge: EDGE [G]
-			v: VERTEX [G]
+			v,u: VERTEX [G]
 			i:INTEGER
 		do
 
 				-- To Do.
+				create v.make(a_vertex.item)
+				from
+					i:= 1
+				until
+					i > vertices.count
+				loop
+					if a_vertex.is_equal (vertices[i])
+					then
+						v := vertices[i]
+					end
+					i := i+ 1
+				end
+
 				from
 					i := 1
 				until
-					i > a_vertex.incoming_edge_count
+					i > v.incoming_edge_count
 				loop
-					v := a_vertex.incoming[i].source
-					create l_edge.make_from_tuple (v, a_vertex)
-					v.outgoing.prune_all (l_edge)
+					u := v.incoming[i].source
+					create l_edge.make_from_tuple (u, v)
+					u.outgoing.prune_all (l_edge)
 					i := i +1
 				end
-
 
 				from
 					i := 1
 				until
-					i > a_vertex.outgoing_edge_count
+					i > v.outgoing_edge_count
 				loop
-					 v := a_vertex.outgoing[i].destination
-					create l_edge.make_from_tuple (a_vertex, v)
-					v.incoming.prune_all (l_edge)
+					 u := v.outgoing[i].destination
+					create l_edge.make_from_tuple (v, u)
+					u.incoming.prune_all (l_edge)
 					i := i +1
 				end
-				 create v.make (a_vertex.item)
-				vertices.prune_all (v)
+				vertices.prune_all (a_vertex)
 
 		ensure
 			cl_remove_vertex_count: vertex_count = old vertex_count - 1
