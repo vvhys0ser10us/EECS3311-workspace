@@ -249,12 +249,22 @@ feature -- Advanced Queries
 		local
 			queue : QUEUE [VERTEX [G]]
 			front : VERTEX [G]
-			r_array : ARRAY[VERTEX [G]]
+			v_array : ARRAY [VERTEX [G]]
+			i_array : ARRAY [INTEGER]
+			i : INTEGER
 		do
 			create Result.make_empty
-			create r_array.make_empty
+			create v_array.make_empty
+			create i_array.make_empty
 			from
 				create queue.make_empty
+
+				across vertices is v
+				loop
+					v_array.force (v, v_array.count + 1)
+					i_array.force (v.incoming_edge_count, i_array.count + 1)
+				end
+
 				across vertices is a_vertex
 				loop
 					if(a_vertex.incoming_edge_count = 0) then
@@ -267,17 +277,25 @@ feature -- Advanced Queries
 			loop
 				front := queue.first
 				queue.dequeue
-				r_array.force (front, r_array.count + 1)
+				Result.force (front, Result.count + 1)
 
 				across front.outgoing_sorted is u
 				loop
-					if((u.destination.incoming_edge_count - 1) = 0) then
-						queue.enqueue (u.destination)
+					i:= 1
+					across v_array is vertex
+					loop
+						if(vertex ~ u.destination) then
+							i_array.put (i_array.at (i) - 1, i)
+							if(i_array.at (i) = 0) then
+								queue.enqueue (u.destination)
+					    	end
+						end
+						i := i + 1
 					end
+
 				end
 			end
-			r_array.compare_objects
-			Result := r_array
+			Result.compare_objects
 				-- To Do.
 
 
