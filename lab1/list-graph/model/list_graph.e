@@ -236,12 +236,13 @@ feature -- commands
 				-- To Do.
 				vertices.force (a_vertex)
 
+
 		ensure
 			cl_add_vertex_membership:has_vertex(a_vertex)  -- To Do.
 			cl_add_vertex_others_unchanged:
-			across vertices as v
+			across 1 |..| vertices.count is i
 			all
-				has_vertex(v.item)
+				vertices[i] /~ a_vertex implies vertices[i] ~ (old vertices)[i]
 			end
 			  -- To Do.
 			cl_add_vertex_count: vertex_count = old vertex_count + 1
@@ -286,9 +287,9 @@ feature -- commands
 		ensure
 			cl_add_edge_membership:has_edge(a_edge)  -- To Do.
 			cl_add_edge_others_unchanged:
-			across edges as e
+			across 1 |..| edges.count is j
 			all
-				has_edge(e.item)
+				edges[j] /~ a_edge implies edges[j] ~ (old current).edges[j]
 			end  -- To Do.
 			cl_add_edge_count: edge_count = old edge_count + 1
 		end

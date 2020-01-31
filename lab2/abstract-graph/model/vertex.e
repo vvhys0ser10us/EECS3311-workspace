@@ -10,14 +10,10 @@
 		sorted based on comparable items in destination vertices. This allows
 		for a unique ordering as in breadth first searches etc.
 			]"
-	note_to_student: "[
-		Only modify features that have a `Todo` comment inside of them.
-		You must also write the postcondition for command `remove_edge`.
-		]"
-	ca_ignore: "CA085"
 	author: "JSO and JW"
 	date: "$Date$"
 	revision: "$Revision$"
+	ca_ignore: "CA033", "CA085"
 
 class
 	VERTEX[G -> COMPARABLE]
@@ -79,28 +75,18 @@ feature -- derived queries
 			-- Return outgoing edges as a sorted array
 			-- (based on destination vertices of edges).
 		local
-			i:INTEGER
-			l_comparator: EDGE_COMPARATOR [G]
-			l_sorter: DS_ARRAY_QUICK_SORTER[EDGE[G]]
-			l_array:ARRAY[EDGE[G]]
-
+			a_comparator: EDGE_COMPARATOR [G]
+			a_sorter: DS_ARRAY_QUICK_SORTER [EDGE[G]]
 		do
-
-			-- Todo: complete implementation
-			Create l_array.make_empty
-			from
-				i := 1
-			until
-				i > outgoing.count
+			create a_comparator
+			create a_sorter.make (a_comparator)
+			create Result.make_empty
+			across
+				outgoing as e
 			loop
-				l_array.force(outgoing[i], i)
-				i := i + 1
+				Result.force(e.item, Result.count + 1)
 			end
-			create l_comparator
-			create l_sorter.make (l_comparator)
-			l_sorter.sort(l_array)
-			Result := l_array
-
+			a_sorter.sort (Result)
 		ensure
 			-- ∀ i ∈ 1 .. (Result.count - 1) : Result[i].destination ≤ Result[i + 1].destination
 			sorted:
@@ -112,10 +98,7 @@ feature -- derived queries
 	outgoing_edge_count: INTEGER
 		-- number of outgoing edges
 		do
-
-			-- Todo: complete implementation
 			Result := outgoing.count
-
 		ensure
 			outgoing_edge_count:
 				Result = outgoing.count
@@ -124,10 +107,7 @@ feature -- derived queries
 	incoming_edge_count: INTEGER
 		-- number of incoming edges
 		do
-
-			-- Todo: complete implementation
 			Result := incoming.count
-
 		ensure
 			incoming_edge_count:
 				Result = incoming.count
@@ -136,10 +116,7 @@ feature -- derived queries
 	edge_count: INTEGER
 			-- number of incoming and outgoing edges
 		do
-
-			-- Todo: complete implementation
 			Result := incoming_edge_count + outgoing_edge_count
-
 		ensure
 			correct_count:
 				Result = incoming_edge_count + outgoing_edge_count
@@ -147,23 +124,18 @@ feature -- derived queries
 
 
 	has_outgoing_edge(a_edge: EDGE[G]): BOOLEAN
-			-- `Current` has `a_edge` as an outgoing edge
+			-- does current vertex has `a_edge` as an outgoing edge?
 		do
-
-			-- Todo: complete implementation
 			Result := outgoing.has (a_edge)
-
 		ensure
+			-- wrong contract: Result = (edge_count > 0)
 			Result = outgoing.has (a_edge)
 		end
 
 	has_incoming_edge(a_edge: EDGE[G]): BOOLEAN
-			-- `Current` has `a_edge` as an incoming edge
+			-- does current vertex has `a_edge` as an incoming edge?
 		do
-
-			-- Todo: complete implementation
 			Result := incoming.has (a_edge)
-
 		ensure
 			Result = incoming.has (a_edge)
 		end
@@ -171,25 +143,17 @@ feature -- derived queries
 feature -- commands
 
 	add_edge(a_edge: EDGE[G])
+			-- adds `a_edge` to current graph
 		require
-			edge_contains_current: a_edge.source ~ Current or a_edge.destination ~ Current
-			new_edge: not (has_incoming_edge (a_edge) or has_outgoing_edge (a_edge))
+			a_edge.source ~ Current or a_edge.destination ~ Current
+			not (has_incoming_edge (a_edge) or has_outgoing_edge (a_edge))
 		do
+			if a_edge.source ~ Current then
+				outgoing.extend (a_edge)
+			end
 
-			-- Todo: complete implementation
-			if (a_edge.source ~ Current) and (a_edge.destination /~ Current)
-			then
-				outgoing.force (a_edge)
-				
-										--a_edge.destination.incoming.force (a_edge)
-			elseif(a_edge.source /~ Current and a_edge.destination ~ Current)
-			then
-				incoming.force (a_edge)
-
-										--a_edge.source.outgoing.force (a_edge)
-			else
-			outgoing.force (a_edge)
-			incoming.force (a_edge)
+			if a_edge.destination ~ Current then
+				incoming.extend (a_edge)
 			end
 		ensure
 			a_edge.destination ~ Current implies incoming.count = old incoming.count + 1
@@ -197,59 +161,30 @@ feature -- commands
 			a_edge.destination ~ Current implies incoming.has (a_edge)
 			a_edge.source ~ Current implies outgoing.has (a_edge)
 			-- incomplete, to add!
-			others_unchanged:
-			across 1  |..| (outgoing.count) is i
-			all
-				outgoing[i] /~ a_edge implies outgoing[i] ~ (old outgoing)[i]
-			end
-
-			across 1  |..| (incoming.count) is i
-			all
-				incoming[i] /~ a_edge implies incoming[i] ~ (old incoming)[i]
-			end
-
 		end
 
 	remove_edge(a_edge: EDGE[G])
+			-- remoes `a_edge` from current graph
 		require
 			a_edge.source ~ Current or a_edge.destination ~ Current
 		do
 
-			-- Todo: complete implementation
-			if a_edge.source ~ Current and a_edge.destination /~ Current
-			then
-				outgoing.prune_all (a_edge)
-			--	a_edge.destination.incoming.prune_all (a_edge)
-			elseif a_edge.source /~ Current and a_edge.destination ~ Current
-			then
-				incoming.prune_all (a_edge)
-			--	a_edge.source.outgoing.prune_all (a_edge)
-			else
-			outgoing.prune_all (a_edge)
-			incoming.prune_all (a_edge)
+			if a_edge.source ~ Current then
+				outgoing.start
+				outgoing.prune (a_edge)
 			end
 
+			if a_edge.destination ~ Current then
+				incoming.start
+				incoming.prune (a_edge)
+			end
 		ensure
 			-- To do.
-			a_edge.destination ~ Current implies incoming.count = old incoming.count - 1
-			a_edge.source ~ Current implies outgoing.count = old outgoing.count - 1
-			a_edge.destination ~ Current implies not incoming.has (a_edge)
-			a_edge.source ~ Current implies not outgoing.has (a_edge)
-			across 1  |..| (outgoing.count) is i
-			all
-				outgoing[i] ~ (old outgoing)[i]
-			end
-
-			across 1  |..| (incoming.count) is i
-			all
-				incoming[i] ~ (old incoming)[i]
-			end
 		end
 
 feature -- out
-
 	out: STRING
-			-- Return string representation of current vertex
+			-- returns a string representation of current edge
 		do
 			Result := item.out + ":"
 			across outgoing_sorted as l_edge loop
@@ -259,7 +194,8 @@ feature -- out
 		end
 
 	debug_output: STRING
-			-- Return string representation of current vertex in debugger
+			-- returns a string representation of current edge
+			-- in the debugger
 		do
 			Result := item.out + ":"
 			across outgoing_sorted as l_edge loop
