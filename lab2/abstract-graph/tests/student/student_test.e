@@ -21,6 +21,7 @@ feature {NONE}-- Initialization
 			add_boolean_case(agent t3)
 			add_boolean_case(agent t4)
 			add_boolean_case(agent t5)
+			add_boolean_case(agent t6)
 		end
 
 feature -- Tests
@@ -225,8 +226,35 @@ feature -- Tests
 			check
 				result
 			end
+
 			reachable := l_g.reachable (l_g.vertices[1])
 			Result := reachable.count ~ 8 and reachable[1].item ~ 1 and reachable[2].item ~ 2 and reachable[3].item ~ 4 and reachable[4].item ~ 3 and reachable[5].item ~ 5 and reachable[7].item ~ 8 and reachable[8].item ~ 7
+			check
+				result
+			end
+		end
+
+	t6: BOOLEAN
+		local
+			l_g: LIST_GRAPH[INTEGER]
+			a_array : ARRAY[TUPLE[INTEGER, INTEGER]]
+			reachable : ARRAY[VERTEX[INTEGER]]
+
+		do
+			comment("t6: ABSTRACT_GRAPH: topological_sort")
+			a_array := <<[1,2],[2,3],[2,4],[1,4],[3,4],[4,5],[4,6],[5,6],[6,7],[5,8],[8,7]>>
+			a_array.compare_objects
+			create l_g.make_from_array (a_array)
+			assert_equal ("correct vertices & edges", "[1:2,4][2:3,4][3:4][4:5,6][5:6,8][6:7][7][8:7]", l_g.out)
+			Result := l_g.edge_count ~ 11 and l_g.vertex_count ~ 8
+			check
+				result
+			end
+
+			Result := l_g.is_topologically_sorted (l_g.topologically_sorted)
+			check
+				result
+			end
 		end
 
 end

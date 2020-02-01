@@ -60,6 +60,15 @@ feature -- Model
 
 		ensure
 			comment ("Establishes model consistency invariants")
+			count: Result.edge_count ~ edge_count and Result.vertex_count ~ vertex_count
+			edge_content: across edges is a_edge
+					all
+						Result.edges.has(a_edge.as_tuple)
+					end
+			vertex_content: across vertices is a_vertex
+							all
+								Result.vertices.has(a_vertex)
+							end
 		end
 
 feature {NONE} -- Initialization
