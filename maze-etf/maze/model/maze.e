@@ -49,11 +49,7 @@ feature -- model attributes
 	give_up : BOOLEAN
 
 feature -- model operations
-	default_update
-			-- Perform update to the model state.
-		do
-			i := i + 1
-		end
+
 
 	new_game(level:INTEGER)
 		local
@@ -172,7 +168,10 @@ feature -- model operations
 
 	solve
 		do
-
+			if(in_game = false) then
+				s:= "Error! Not in a game."
+				i:= i + 1
+			end
 		end
 
 	reset

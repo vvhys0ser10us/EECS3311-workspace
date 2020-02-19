@@ -6,15 +6,15 @@ note
 
 class
 	ETF_SOLVE
-inherit 
+inherit
 	ETF_SOLVE_INTERFACE
 create
 	make
-feature -- command 
+feature -- command
 	solve
     	do
 			-- perform some update on the model state
-			model.default_update
+			model.solve
 			etf_cmd_container.on_change.notify ([Current])
     	end
 
