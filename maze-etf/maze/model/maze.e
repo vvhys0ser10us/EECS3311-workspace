@@ -20,33 +20,37 @@ feature {NONE} -- Initialization
 	make
 			-- Initialization for `Current'.
 		do
+			create score.make
 			create s.make_empty
 			create graph.make_empty
 			create g.make
 			create draw.make (g.generate_new_maze (1))
 			i := 0
 			num := 0
-			curr := 0
-			total := 0
 			diff := 0
 			in_game := false
-			create pass.make_empty
 			give_up := false
 		end
 
 feature -- model attributes
 	s : STRING
 	i : INTEGER
-	num: INTEGER
+
+	num: INTEGER			--number of games
+
 	graph : LIST_GRAPH [COORDINATE]
 	g : MAZE_GENERATOR
 	draw : MAZE_DRAWER
-	total : INTEGER
-	curr : INTEGER
-	pass : STRING
-	diff : INTEGER
-	in_game : BOOLEAN
-	give_up : BOOLEAN
+
+	diff : INTEGER 		--current difficulty
+
+	in_game : BOOLEAN		--in-game state
+
+	give_up : BOOLEAN		--abort state
+
+	score : SCORE  		--score
+
+
 
 feature -- model operations
 
@@ -59,12 +63,15 @@ feature -- model operations
 			if(in_game ~ false) then
 				create game.make
 				in_game := true
+
 				create pic.make (game.generate_new_maze (level))
 				draw := pic
 				s := pic.out
 				i := i + 1
 				num := num + 1
-				total := level + total
+				if(draw.maze_graph.reachable(draw.maze_graph.vertices.at (draw.size * draw.size )).has (draw.maze_graph.vertices.at (1)))then
+					score.total_add (level)
+				end
 				diff := level
 				give_up := false
 			else
@@ -142,7 +149,7 @@ feature -- model operations
 				draw := pic
 				if(pic.player_coord.row ~ (pic.size * 2 + 1) and pic.player_coord.col ~ pic.size) then
 					s.append ("%N  Congratulations! You escaped the maze!")
-					curr := curr + diff
+					score.curr_add (diff)
 					in_game := false
 				end
 				i := i + 1
@@ -167,15 +174,66 @@ feature -- model operations
 		end
 
 	solve
+		local
+			cur : VERTEX[COORDINATE]
+			dst : VERTEX[COORDINATE]
+			s_p : ARRAY[VERTEX[COORDINATE]]
+			front :VERTEX[COORDINATE]
+			queue : QUEUE[VERTEX[COORDINATE]]
+
 		do
 			if(in_game = false) then
 				s:= "Error! Not in a game."
 				i:= i + 1
+			else
+				if(not draw.maze_graph.reachable(draw.maze_graph.vertices.at (draw.size * draw.size )).has (draw.maze_graph.vertices.at (1))) then
+					s := "Error! Maze is not solvable, you may abort with no penalty."
+					i := i + 1
+				else
+					i:= i + 1
+
+					create cur.make ([2,1])
+
+					across draw.maze_graph.vertices is cod
+					loop
+						if(cod.item.row = draw.player_coord.row and cod.item.col = draw.player_coord.col) then
+							cur := cod  --current position
+						end
+					end
+
+					dst := draw.maze_graph.vertices.at (draw.size * draw.size)
+
+					from
+						s_p := <<cur>>
+						queue := <<cur>>
+					until
+						s_p.has (dst)
+					loop
+						front := queue.first
+						queue.dequeue
+						across front.outgoing_sorted  is x
+						loop
+							if not s_p.has (x.destination) then
+								s_p.force (x.destination, s_p.count + 1)
+								queue.enqueue (x.destination)
+							end
+						end
+					end
+
+					across s_p is y
+					loop
+						if(draw.maze_ascii[y.item.row * 2, y.item.col][3] /~ draw.path_char and draw.maze_ascii[y.item.row * 2, y.item.col][3] /~ draw.player_char) then
+							draw.maze_ascii[y.item.row * 2, y.item.col][3] := draw.soln_char
+						end
+					end
+					s := draw.out
+					s.append ("%N  Since you used the solution, no points are awarded.")
+				end
 			end
 		end
 
+feature
 	reset
-			-- Reset model state.
 		do
 			make
 		end
@@ -188,12 +246,12 @@ feature -- queries
 			Result.append (i.out)
 			Result.append (" -> ")
 			if(s /~ "Error! Not in a game.") then
-				if(s /~ "Error! Not a valid move." and s /~ "Error! In game already.") then
+				if(s /~ "Error! Not a valid move." and s /~ "Error! In game already." and s /~ "Error! Maze is not solvable, you may abort with no penalty.") then
 						Result.append ("ok")
 				end
 				Result.append (s)
 				if(i /= 0 and give_up = false) then
-					Result.append ("%N  Game Number: "+ num.out + "%N  Score: " + curr.out + " / "+ total.out + "%N")
+					Result.append ("%N  Game Number: "+ num.out + "%N  " + score.out + "%N")
 				end
 			else
 				Result.append (s)
@@ -201,7 +259,6 @@ feature -- queries
 		end
 
 end
-
 
 
 
