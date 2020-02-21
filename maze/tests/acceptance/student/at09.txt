@@ -1,0 +1,10 @@
+new_game(easy)
+abort
+new_game(easy)
+abort
+new_game(easy)
+abort
+new_game(easy)
+abort
+new_game(easy)
+

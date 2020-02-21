@@ -1,0 +1,14 @@
+new_game(easy)
+solve
+move(E)
+solve
+move(E)
+solve
+move(E)
+move(E)
+move(E)
+solve
+move(E)
+solve
+
+

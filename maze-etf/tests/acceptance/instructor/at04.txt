@@ -1,9 +1,0 @@
-abort
-move(E)
-new_game(easy)
-move(E)
-abort
-new_game(medium)
-abort
-new_game(hard)
-

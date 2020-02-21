@@ -1,0 +1,19 @@
+new_game(easy)
+move(E)
+move(E)
+move(E)
+move(E)
+move(E)
+move(E)
+move(S)
+move(S)
+move(S)
+move(S)
+move(W)
+move(S)
+move(S)
+move(E)
+-- win
+abort
+new_game(easy)
+abort
