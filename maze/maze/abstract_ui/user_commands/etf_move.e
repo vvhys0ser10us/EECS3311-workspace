@@ -8,6 +8,7 @@ class
 	ETF_MOVE
 inherit
 	ETF_MOVE_INTERFACE
+
 create
 	make
 feature -- command

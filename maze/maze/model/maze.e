@@ -46,6 +46,7 @@ feature {NONE}-- model attributes
 
 	g : MAZE_GENERATOR
 
+
 	h : MAZE_GENERATOR
 
 	draw : MAZE_DRAWER	--maze_graph

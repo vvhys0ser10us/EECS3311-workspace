@@ -32,6 +32,6 @@
 		<library name="structure" location="$ISE_LIBRARY\contrib\library\gobo\library\structure\src\library.ecf"/>
 		<cluster name="model" location=".\model\" recursive="true"/>
 		<cluster name="root" location=".\root\" recursive="true"/>
-		<cluster name="tests" location=".\tests\" recursive="true"/>
+		<cluster name="tests" location="\Users\ken\eecs3311-workspace\lab4\simodyssey1-starter\tests\acceptance\instructor\" recursive="true"/>
 	</target>
 </system>

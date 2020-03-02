@@ -18,6 +18,8 @@ inherit
 
 	KL_COMPARATOR [EDGE [G]]
 
+	
+
 create
 	default_create
 

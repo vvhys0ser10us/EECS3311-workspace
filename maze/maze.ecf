@@ -37,7 +37,7 @@
 		<library name="time" location="$ISE_LIBRARY\library\time\time.ecf"/>
 		<library name="vision2" location="$ISE_LIBRARY\library\vision2\vision2.ecf"/>
 		<cluster name="generated_code" location=".\generated_code\" recursive="true"/>
-		<cluster name="graph" location="\Users\ken\eecs3311-workspace\maze\graph\" recursive="true">
+		<cluster name="graph" location=".\graph\" recursive="true">
 			<option>
 				<assertions/>
 			</option>

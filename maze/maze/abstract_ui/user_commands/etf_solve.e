@@ -8,6 +8,7 @@ class
 	ETF_SOLVE
 inherit
 	ETF_SOLVE_INTERFACE
+
 create
 	make
 feature -- command

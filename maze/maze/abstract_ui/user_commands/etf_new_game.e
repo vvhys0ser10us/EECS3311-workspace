@@ -8,6 +8,7 @@ class
 	ETF_NEW_GAME
 inherit
 	ETF_NEW_GAME_INTERFACE
+	
 create
 	make
 feature -- command
